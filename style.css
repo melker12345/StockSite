@@ -1,0 +1,165 @@
+* {
+    --bg: #191b1c;
+    --bg2: #151718;
+    --fg: #efefef;
+    --black: #000;
+
+    overflow-x: hidden;
+    background-color: var(--bg);
+    padding: 0;
+    margin: 0;
+}
+
+
+/* Basic styles for header and navigation */
+header {
+    background-color: inherit;
+    padding: 1rem 5rem 1rem 5rem;
+    font-size: 1.5rem;
+    display: flex;
+    margin-bottom: 1rem;
+    border-bottom: var(--black) 1px solid;
+
+}
+
+#logo {
+    width: fit-content;
+    border: 1px solid red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#logo p {
+    color: var(--fg);
+    font-size: 18px;
+}
+
+#balance-Div {
+    display: flex;
+    align-items: center;
+    margin-left: 1px;
+    width: fit-content;
+    background-color: #0b0c0c;
+    border-radius: 50px;
+    position: absolute;
+    right: 5rem;
+}
+
+#balance {
+    font-size: 18px;
+    margin: 10px;
+    background-color: inherit;
+    color: var(--fg);
+}
+
+nav {
+    background-color: var(--bg);
+    width: 50%;
+    padding: 0.5rem 0;
+    border: 1px solid red;
+    margin: auto ;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    
+}
+
+
+nav a {
+    margin-left: 5rem;
+    margin-right: 5rem;
+    color: var(--fg);
+    text-decoration: none;
+    border: #000 1px solid;
+    background-color: var(--bg2);
+}
+
+nav a:hover {
+    background-color: #555;
+}
+
+#searchbar{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#symbolSearch{
+    border: 1px solid #0b0c0c;
+    height: 4rem;
+    width: 33%;
+    text-align: center;
+    font-size: 32px;
+    color: var(--fg);
+
+}
+#symbolSearch {
+   text-decoration: none;
+   outline: unset;
+}
+
+#searchResultsContainer{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--fg);
+    background-color: var(--bg2);
+}
+
+#searchResults {
+    width: 33%;
+
+}
+
+#searchResults > div {
+    padding: 10px;
+    margin-top: 5px;
+    background-color: #121212;
+    cursor: pointer;
+}
+
+/* Placeholder for the chart */
+#chart {
+    width: 50%;
+    height: auto;
+    margin: auto ;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fg);
+    border: 1px solid #0b0c0c;
+    margin-bottom: 1rem;
+}
+
+#stockChart {
+    width: 100%;
+}
+
+/* Time frame navigation */
+#timeFrame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 30%;
+    padding: 10px;
+    border: #000 1px solid;
+}
+
+button{
+    height: 2rem;
+    width: 5rem;
+    border: none;
+    background-color: #181a1b;
+    color: var(--fg);
+}
+
+button:hover{
+    border-bottom: 2px solid green;
+}
