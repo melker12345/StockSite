@@ -2,79 +2,72 @@ const apiKey = "RVFIMWMC4KB7C7N6";
 let stockChart;
 let currentSymbol = ""; // Keep track of the currently selected symbol
 
+function convertETtoCET(dateString) {
+    // Parse the date string into a Date object (assuming ET)
+    const etDate = new Date(dateString + "T00:00:00-05:00"); // Append time and ET timezone offset
+
+    // Add 6 hours to convert to CET (5 hours for ET offset + 1 hour for CET)
+    etDate.setHours(etDate.getHours() + 6);
+
+    return etDate;
+}
+
 // Function to create/update a chart
-function createChart(data, symbol) {
-    const ctx = document.getElementById("stockChart").getContext("2d");
+function createChart(chartData, symbol) {
     if (stockChart) {
         stockChart.destroy();
     }
 
-    stockChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: data.labels,
-            datasets: [
-                {
-                    label: `${symbol} Stock Price`,
-                    data: data.prices,
-                    borderColor: "#0ca8f6",
-                },
-            ],
+    stockChart = new Highcharts.stockChart("stockChart", {
+        rangeSelector: {
+            selected: 1,
         },
-        options: {
-            scales: {
-                x: {
-                    ticks: {
-                        display: true, // This will remove the labels on the x-axis
-                    },
-                },
-                y: {
-                    // y-axis labels
-                    beginAtZero: false,
-                },
-            },
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: `Stock Price of ${symbol}: ${currentSymbol} `,
-                },
-                legend: {
-                    display: false, // Assuming you don't want to show the legend
-                },
-            },
+
+        title: {
+            text: `Stock Price of ${symbol}`,
         },
+
+        series: [{
+            name: `${symbol} Stock Price`,
+            data: chartData, // Directly using the array of [timestamp, price] pairs
+            tooltip: {
+                valueDecimals: 2,
+            },
+        }],
     });
 }
 
-// Function to fetch stock data
-async function fetchData(symbol, interval) {
-    let functionType;
-    let timeSeriesKey;
+// this function should fetch all the avalible data for the symbol and display it in the chart
 
-    if (interval === "1wk") {
-        functionType = "TIME_SERIES_WEEKLY";
-        timeSeriesKey = "Weekly Time Series";
-    } else {
-        functionType =
-            interval === "1d" ? "TIME_SERIES_DAILY" : "TIME_SERIES_INTRADAY";
-        timeSeriesKey =
-            functionType === "TIME_SERIES_DAILY"
-                ? "Time Series (Daily)"
-                : `Time Series (${interval})`;
-    }
-    
-    const url = `https://www.alphavantage.co/query?function=${functionType}&symbol=${symbol}${interval !== "1wk" ? `&interval=${interval}` : ''}&apikey=${apiKey}`;
+// Function to fetch stock data
+async function fetchTimeSeries(symbol, functionType, timeSeriesKey) {
+    const url = `https://www.alphavantage.co/query?function=${functionType}&symbol=${symbol}&apikey=${apiKey}`;
     const response = await fetch(url);
     const data = await response.json();
 
-    const labels = [];
-    const prices = [];
+    const seriesData = [];
     for (let [date, value] of Object.entries(data[timeSeriesKey])) {
-        labels.unshift(date);
-        prices.unshift(value["4. close"]);
+        const cetDate = convertETtoCET(date); // Converting to CET if necessary
+        const timestamp = cetDate.getTime();
+        const price = parseFloat(value["4. close"]);
+        seriesData.push([timestamp, price]);
     }
-    return { labels, prices };
+
+    return seriesData;
+}
+
+async function fetchData(symbol) {
+    // Fetch data from multiple time series
+    const dailyData = await fetchTimeSeries(symbol, "TIME_SERIES_DAILY", "Time Series (Daily)");
+    const weeklyData = await fetchTimeSeries(symbol, "TIME_SERIES_WEEKLY", "Weekly Time Series");
+    // Add other time series if needed
+
+    // Combine and sort data
+    const combinedData = [...dailyData, ...weeklyData];
+    combinedData.sort((a, b) => a[0] - b[0]); // Sort by timestamp
+
+    console.log(combinedData);
+    return combinedData;
 }
 
 // Function to display search results
@@ -90,11 +83,10 @@ function displaySearchResults(matches) {
 }
 
 // Function to handle selection of a symbol
-async function selectSymbol(symbol, interval = "5min") {
-    currentSymbol = symbol; // Update the current symbol
-    const data = await fetchData(symbol, interval);
-    createChart(data, symbol);
-    document.getElementById("searchResults").innerHTML = "";
+async function selectSymbol(symbol) {
+    currentSymbol = symbol;
+    const chartData = await fetchData(symbol);
+    createChart(chartData, symbol);
 }
 
 // Event listener for the search input
@@ -111,21 +103,6 @@ document
     });
 
 // Event listeners for buttons
-document
-    .getElementById("dayBtn")
-    .addEventListener("click", () => selectSymbol(currentSymbol, "5min"));
-document
-    .getElementById("fiveDayBtn")
-    .addEventListener("click", () => selectSymbol(currentSymbol, "30min"));
-document
-    .getElementById("monthBtn")
-    .addEventListener("click", () => selectSymbol(currentSymbol, "1d"));
-document
-    .getElementById("yearBtn")
-    .addEventListener("click", () => selectSymbol(currentSymbol, "1d"));
-document
-    .getElementById("maxBtn")
-    .addEventListener("click", () => selectSymbol(currentSymbol, "1wk")); // '1d' can be changed to a different interval if needed
 
 // Update the selectSymbol function in the displaySearchResults to include the default interval
 function updateSearchResultsClick() {

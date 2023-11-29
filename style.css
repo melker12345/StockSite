@@ -3,6 +3,7 @@
     --bg2: #151718;
     --fg: #efefef;
     --black: #000;
+    color: var(--fg);
 
     overflow-x: hidden;
     background-color: var(--bg);
@@ -124,21 +125,10 @@ nav a:hover {
     cursor: pointer;
 }
 
-/* Placeholder for the chart */
-#chart {
-    width: 50%;
-    height: auto;
-    margin: auto ;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--fg);
-    border: 1px solid #0b0c0c;
-    margin-bottom: 1rem;
-}
+
 
 #stockChart {
-    width: 100%;
+    width: 80%;
 }
 
 /* Time frame navigation */

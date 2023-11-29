@@ -6,8 +6,9 @@
     <title>Stock Chart</title>
     <link rel="stylesheet" href="style.css">
     <!-- Include Chart.js from a CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
 </head>
+
 
 <body>
     <header>
@@ -29,8 +30,9 @@
     <div id="searchResultsContainer">
         <div id="searchResults"></div>
     </div>
-    <div id="chart">
-        <canvas id="stockChart"></canvas>
+    
+    <div>
+        <div id="stockChart" style="height: 400px; min-width: 310px"></div>
     </div>
     <div id="timeFrame">
         <button id="dayBtn">1 Day</button>
