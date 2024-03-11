@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+</head>
+
+<body>
+    <div class="indexChanges">
+        <ul id="indexChangesList">
+            <!-- Index changes will be populated here -->
+        </ul>
+    </div>
+
+    <header class="navbar">
+        <div>
+            <button id="theme-toggle" onclick="toggleTheme()">◑</button>
+        </div>
+    </header>
+
+    <div class="fetch-con">
+        <input class="input-field" type="text" placeholder="Enter Stock Ticker" />
+        <button class="fetch-btn" onclick="fetchAndDisplayData()">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+
+    <script>
+        const apikey = '1z3Eat6B3MbUU0ayvXDBXEt4D82W1Zmo'
+
+        let stocks = [];
+        let theme = 'dark';
+        let ticker = document.querySelector('.input-field').value;
+
+        const keyMapping = {
+            "acceptedDate": "GodkäntDatum",
+            "averageInventory": "GenomsnittligtLager",
+            "averagePayables": "GenomsnittligaKortfristigaSkulder",
+            "averageReceivables": "GenomsnittligaFordringar",
+            "bookValuePerShare": "BokföringsvärdePerAktie",
+            "calendarYear": "Kalenderår",
+            "capexToDepreciation": "CapexTillAvskrivningar",
+            "capexToOperatingCashFlow": "CapexTillRörelseKassaflöde",
+            "capexToRevenue": "CapexTillIntäkter",
+            "cashPerShare": "KontanterPerAktie",
+            "cik": "CIK",
+            "costAndExpenses": "KostnaderOchUtgifter",
+            "costOfRevenue": "KostnadFörIntäkter",
+            "currentRatio": "Kassalikviditet",
+            "date": "Datum",
+            "daysOfInventoryOnHand": "DagarLagerIHand",
+            "daysPayablesOutstanding": "DagarBetalningarUtestående",
+            "daysSalesOutstanding": "DagarFörsäljningUtestående",
+            "debtToAssets": "SkulderTillTillgångar",
+            "debtToEquity": "SkuldTillEgetKapital",
+            "depreciationAndAmortization": "AvskrivningarOchNedskrivningar",
+            "dividendYield": "Utdelningsavkastning",
+            "earningsYield": "Resultatavkastning",
+            "ebitda": "EBITDA",
+            "ebitdaratio": "EBITDAKvot",
+            "enterpriseValue": "Företagsvärde",
+            "enterpriseValueOverEBITDA": "FöretagsvärdeÖverEBITDA",
+            "eps": "EPS",
+            "epsdiluted": "EPSUtdunnat",
+            "evToFreeCashFlow": "EVtillFrittKassaflöde",
+            "evToOperatingCashFlow": "EVtillRörelsekassaflöde",
+            "evToSales": "EVtillFörsäljning",
+            "fillingDate": "Inlämningsdatum",
+            "finalLink": "SlutligLänk",
+            "freeCashFlowPerShare": "FrittKassaflödePerAktie",
+            "freeCashFlowYield": "FrittKassaflödeAvkastning",
+            "generalAndAdministrativeExpenses": "AllmännaOchAdministrativaKostnader",
+            "grahamNetNet": "GrahamNetNet",
+            "grahamNumber": "GrahamTal",
+            "grossProfit": "Bruttovinst",
+            "grossProfitRatio": "Bruttovinstmarginal",
+            "incomeBeforeTax": "ResultatFöreSkatt",
+            "incomeBeforeTaxRatio": "ResultatFöreSkattKvot",
+            "incomeQuality": "Inkomstkvalitet",
+            "incomeTaxExpense": "Inkomstskattekostnad",
+            "intangiblesToTotalAssets": "ImmateriellaTillgångarTillTotalaTillgångar",
+            "interestCoverage": "Räntetäckningsgrad",
+            "interestDebtPerShare": "RäntebärandeSkuldPerAktie",
+            "interestExpense": "Räntekostnad",
+            "interestIncome": "Ränteintäkter",
+            "inventoryTurnover": "Lageromsättningshastighet",
+            "investedCapital": "InvesteratKapital",
+            "link": "Länk",
+            "marketCap": "Marknadsvärde",
+            "netCurrentAssetValue": "NettoNuvarandeTillgångsvärde",
+            "netDebtToEBITDA": "NettoSkuldTillEBITDA",
+            "netIncome": "Nettoinkomst",
+            "netIncomePerShare": "NettoinkomstPerAktie",
+            "netIncomeRatio": "NettoinkomstKvot",
+            "operatingCashFlowPerShare": "RörelsekassaflödePerAktie",
+            "operatingExpenses": "Rörelsekostnader",
+            "operatingIncome": "Rörelseresultat",
+            "operatingIncomeRatio": "RörelseresultatKvot",
+            "otherExpenses": "ÖvrigaKostnader",
+            "payablesTurnover": "LeverantörsskulderOmsättning",
+            "payoutRatio": "Utdelningsförhållande",
+            "pbRatio": "P/B-Tal",
+            "peRatio": "P/E-Tal",
+            "period": "Period",
+            "pfcfRatio": "P/FCF-Tal",
+            "pocfratio": "P/OCF-Kvot",
+            "priceToSalesRatio": "PrisTillFörsäljningsKvot",
+            "ptbRatio": "PTB-Kvot",
+            "receivablesTurnover": "KundfordringarOmsättning",
+            "reportedCurrency": "RapporteradValuta",
+            "researchAndDevelopmentExpenses": "ForskningsOchUtvecklingskostnader",
+            "researchAndDdevelopementToRevenue": "FoU-tillIntäkter",
+            "returnOnTangibleAssets": "AvkastningPåMateriellaTillgångar",
+            "revenue": "Intäkter",
+            "revenuePerShare": "IntäkterPerAktie",
+            "roic": "ROIC",
+            "salesGeneralAndAdministrativeToRevenue": "FörsäljningAllmännaOchAdministrativaTillIntäkter",
+            "sellingAndMarketingExpenses": "FörsäljningsOchMarknadsföringskostnader",
+            "sellingGeneralAndAdministrativeExpenses": "FörsäljningsAllmännaOchAdministrativaKostnader",
+            "shareholdersEquityPerShare": "EgetKapitalPerAktie",
+            "stockBasedCompensationToRevenue": "AktiebaseradErsättningTillIntäkter",
+            "symbol": "Symbol",
+            "tangibleAssetValue": "MateriellaTillgångarsVärde",
+            "tangibleBookValuePerShare": "MaterielltBokföringsvärdePerAktie",
+            "totalOtherIncomeExpensesNet": "TotalaÖvrigaInkomsterKostnaderNetto",
+            "weightedAverageShsOut": "VägtGenomsnittligtAntalAktierUte",
+            "weightedAverageShsOutDil": "VägtGenomsnittligtAntalUttunnadeAktier",
+            "workingCapital": "Rörelsekapital"
+        };
+
+
+        // THEME TOGGLE
+        function checkTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', currentTheme);
+        };
+        document.addEventListener('DOMContentLoaded', (event) => {
+            checkTheme();
+            fetchData();
+        });
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        };
+
+
+        // FETCH INDEX DATA
+        async function fetchIndex() {
+            const indexList = ['^OMXS30', '^NDX', '^SPX', '^DJSH'];
+            const indexChangesList = document.getElementById('indexChangesList');
+            indexChangesList.innerHTML = '';
+
+            for (const index of indexList) {
+                try {
+                    const response = await fetch(`https://financialmodelingprep.com/api/v3/quote/${index}?apikey=${apikey}`);
+                    const data = await response.json();
+                    const changesPercentage = data[0].changesPercentage.toFixed(2);
+                    let formattedChangePercentage = changesPercentage > 0 ? `+${changesPercentage}%` : `${changesPercentage}%`;
+
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${data[0].symbol.slice(1)} ${formattedChangePercentage}`;
+                    indexChangesList.appendChild(listItem);
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                }
+            }
+        };
+
+        async function fetchData() {
+            checkTheme();
+            await fetchIndex();
+        };
+
+
+        // FETCH STOCK DATA
+        async function fetchAndDisplayData() {
+            const inputField = document.querySelector('.input-field');
+            let ticker = inputField.value; // Get the latest ticker value
+            if (!ticker) {
+                console.error("No ticker entered.");
+                return;
+            }
+            console.log('Fetching data for:', ticker);
+            try {
+                const incomeData = await fetchApiData(`v3/income-statement/${ticker}?period=annually`);
+                const metricsData = await fetchApiData(`v3/key-metrics/${ticker}?period=annually`);
+                const discountedCashFlow = await fetchApiData(`v4/advanced_discounted_cash_flow?symbol=${ticker}`);
+
+                // foreach object in combined array, rename the keys to the swedish terms using the keyMapping object,
+                // such that the values e.g. "Revenue" becomes "Intäkter" use the renameKeys function
+                // but the value associated with the key "Currency" should remain "USD" but the key should be "Valuta"
+                let combinedData = combineData(incomeData, metricsData, discountedCashFlow);
+                console.log(combinedData);
+                combinedData = combinedData.map(obj => renameKeys(obj)); // This now correctly renames keys
+
+                // Keep only the latest 5 reports and adjust as per your logic
+                let IncomeAndMetrics = combinedData.slice(0, 5);
+                stocks.push(IncomeAndMetrics);
+
+
+
+
+                // Directly push the new array of reports into the stocks array
+                console.log(stocks);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        const combineData = (incomeData, metricsData, discountedCashFlow) => {
+            const maxLength = Math.max(incomeData.length, metricsData.length, discountedCashFlow.length);
+            return Array.from({ length: maxLength }, (_, i) => {
+                const combinedObject = {
+                    ...incomeData[i],
+                    ...metricsData[i],
+                    ...discountedCashFlow[i],
+                };
+                removeLastTwoKeyValues(combinedObject);
+                return combinedObject;
+            });
+        };
+
+        const fetchApiData = async (endpoint) => {
+            try {
+                const url = `https://financialmodelingprep.com/api/${endpoint}&apikey=${apikey}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json(); // Fixed to use .json()
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                return [];
+            }
+        };
+
+        function removeLastTwoKeyValues(obj) {
+            const keys = Object.keys(obj);
+            if (keys.length >= 2) {
+                delete obj[keys[keys.length - 1]]; // Remove last key
+                delete obj[keys[keys.length - 2]]; // Remove second last key
+            }
+        };
+        const renameKeys = (object) => {
+            const renamedObject = {};
+            Object.entries(object).forEach(([key, value]) => {
+                // Translate the key from English to Swedish using the mapping
+                const swedishKey = keyMapping[key] || key; // Default to the original key if no translation is found
+                renamedObject[swedishKey] = value;
+            });
+            return renamedObject;
+        };
+
+
+
+    </script>
+
+    <style>
+        :root {
+            font-family: 'Segoe UI', 'Segoe UI Black', Roboto,
+                Helvetica, Arial;
+            background-color: #333;
+
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--main-bg-color);
+            color: var(--main-text-color);
+        }
+
+        /* Base styles for the light theme */
+        :root {
+            --main-bg-color: #f0f0f0;
+            --main-text-color: #0b0c0d;
+            --button-bg-color: #4CAF50;
+            --button-text-color: #ffffff;
+            --navbar-bg-color: #ffffff;
+            --navbar-text-color: #333333;
+            --button-hover-bg-color: #3d8e40;
+            --button-hover-text-color: #3d8e40;
+
+        }
+
+        /* Dark theme overrides */
+        [data-theme="dark"] {
+            --main-bg-color: #1e2021;
+            --main-text-color: #dfdcd8;
+            --button-bg-color: #666;
+            --button-text-color: #fff;
+            --navbar-bg-color: #181a1b;
+            --navbar-text-color: #ffffff;
+            --button-hover-bg-color: #333333;
+            --button-hover-text-color: #3d8e40;
+        }
+
+        * {
+            overflow-x: hidden;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            max-width: 100vw;
+
+
+        }
+
+        .indexChanges>ul {
+            display: flex;
+            width: 40%;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .indexChanges>ul>li {
+            display: flex;
+            margin: 8px;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        .indexChanges {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--navbar-bg-color);
+            color: var(--navbar-text-color);
+
+        }
+
+        .nav-button {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: var(--navbar-text-color);
+            margin-right: 5rem;
+        }
+
+        #theme-toggle {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            font-size: 32px;
+            margin-left: 2rem;
+
+        }
+
+        #theme-toggle:hover {
+            background-color: var(--main-bg-color);
+            color: var(--main-text-color);
+        }
+
+        .fetch-con {
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .input-field {
+            outline: none;
+            height: 3rem;
+            width: 15rem;
+            border: 1px solid #727272;
+            border-right: none;
+            border-radius: 15px 0px 0px 15px;
+            padding: 8px;
+            font-size: 18px;
+            background-color: var(--main-bg-color);
+            color: var(--main-text-color);
+
+        }
+
+        .input-field:focus {
+            outline: none;
+            border: 1px solid #a8a8a8;
+        }
+
+        .fetch-btn {
+            height: 3rem;
+            width: 3rem;
+            border-radius: 0;
+            border: none;
+            outline: none;
+            background-color: #3a99ff;
+            cursor: pointer;
+            font-size: 22px;
+        }
+
+        .fetch-btn:hover {
+            background-color: #3488e1;
+        }
+    </style>
+</body>
+
+</html>

@@ -1,0 +1,72 @@
+:root {
+    font-family: 'Segoe UI', 'Segoe UI Black', Roboto,
+        Helvetica, Arial;
+    background-color: #333;
+
+}
+
+body {
+    margin: 0;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+}
+
+/* Base styles for the light theme */
+:root {
+    --main-bg-color: #f0f0f0;
+    --main-text-color: #0b0c0d;
+    --button-bg-color: #4CAF50;
+    --button-text-color: #ffffff;
+    --navbar-bg-color: #ffffff;
+    --navbar-text-color: #333333;
+    --button-hover-bg-color: #3d8e40;
+    --button-hover-text-color: #3d8e40;
+
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] {
+    --main-bg-color: #1e2021;
+    --main-text-color: #dfdcd8;
+    --button-bg-color: #666;
+    --button-text-color: #fff;
+    --navbar-bg-color: #181a1b;
+    --navbar-text-color: #ffffff;
+    --button-hover-bg-color: #333333;
+    --button-hover-text-color: #3d8e40;
+}
+
+* {
+    overflow-x: hidden;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    max-width: 100vw;
+
+
+}
+
+.indexChanges>ul {
+    display: flex;
+    width: 40%;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.indexChanges>ul>li {
+    display: flex;
+    margin: 8px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.indexChanges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
