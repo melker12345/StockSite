@@ -30,12 +30,37 @@
         </button>
     </div>
 
+    <div id="stocksContainer"></div>
+
+
+    </div>
+
+    <!-- implement HTML for filter -->
+
     <script>
+        /*
+        TODO:
+        - refactor the code
+        - implement the filter function
+            - implement the ability to set ranges for the metrics and the table should only display the stocks that meet the criteria.
+        - implement minimize and maximize function for the tables
+        - implement the ability to compare tables side by side
+            
+        */
+
+
         const apikey = '1z3Eat6B3MbUU0ayvXDBXEt4D82W1Zmo'
 
         let stocks = [];
         let theme = 'dark';
         let ticker = document.querySelector('.input-field').value;
+
+        /*
+            # TODO:
+            - Go over what metrics we want to display in the table
+            - If metric not in keyMapping object, don't display it
+            - The filter should modify keyMapping in the future
+        */
 
         const keyMapping = {
             "acceptedDate": "GodkäntDatum",
@@ -180,7 +205,9 @@
         };
 
 
-        // FETCH STOCK DATA
+        // FETCH STOCK DATA 
+        // DO NOT FLATTEN THE DATA, KEEP IT AS AN LIST OF LIST OF OBJECTS
+        // BECAUSE WE WANT TO KEEP THE DATA FOR EACH STOCK IN A SEPARATE LIST INSIDE THE stocks LIST
         async function fetchAndDisplayData() {
             const inputField = document.querySelector('.input-field');
             let ticker = inputField.value; // Get the latest ticker value
@@ -204,12 +231,8 @@
                 // Keep only the latest 5 reports and adjust as per your logic
                 let IncomeAndMetrics = combinedData.slice(0, 5);
                 stocks.push(IncomeAndMetrics);
-
-
-
-
-                // Directly push the new array of reports into the stocks array
                 console.log(stocks);
+                redrawTables()
 
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -234,7 +257,7 @@
                 const url = `https://financialmodelingprep.com/api/${endpoint}&apikey=${apikey}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return await response.json(); // Fixed to use .json()
+                return await response.json(); 
             } catch (error) {
                 console.error("Error fetching data:", error);
                 return [];
@@ -251,15 +274,112 @@
         const renameKeys = (object) => {
             const renamedObject = {};
             Object.entries(object).forEach(([key, value]) => {
-                // Translate the key from English to Swedish using the mapping
                 const swedishKey = keyMapping[key] || key; // Default to the original key if no translation is found
                 renamedObject[swedishKey] = value;
             });
             return renamedObject;
         };
 
+        /*
+        #INFO FOR THE TABLE:
+        - The stocks list is a list of list, each containing the latest 5 reports for a given stock.
+            [ [report1, report2, report3, report4, report5], [report1, report2, report3, report4, report5], ... ],
+        - Each report is an object containing the financial data for a given stock.
+        
+        TODO:
+        - the table should have the the key metrics of the first object (report) in the right most column
+            and the values for the latest report e.i the first object in the first list in the stocks list 
+            in the column to the left of the key metrics column. 
+            and report 2 to the left of report 1 and so on.
+            so that we only display the key metrics once per table, and the latest report is always the first column.
+
+        - If the stocks list is empty display some text that says "No data to display" or something similar.
+        - Once the stocks list is updated, the tables should be redrawn to reflect the new data.
+        - The table should be styled to look good and be responsive.
+        
+        #KEEP IN MIND: 
+        - We are going to implement a filter function that filters the metrics based on the user input. (usere selects what metrics(rows) to be display)
+        - The user should be able to set ranges for the metrics and the table should only display the stocks that meet the criteria.
+        - User should be able to compair tables side by side. in the futures 
 
 
+        */
+        
+        
+        function redrawTables() {
+            const stocksContainer = document.getElementById('stocksContainer');
+            stocksContainer.innerHTML = ''; // Clear existing tables
+
+            if (stocks.length === 0) {
+                stocksContainer.textContent = 'No data to display';
+                console.log('No data to display');
+                return;
+            }
+
+            stocks.forEach(stockReports => {
+                const tableContainer = document.createElement('div');
+                tableContainer.className = 'stock-table-container';
+                const table = createStockTable(stockReports.reverse()); // Reverse to ensure the latest report appears on the left
+                if (table) { // Ensure the table exists before attempting to append
+                    tableContainer.appendChild(table);
+                    stocksContainer.appendChild(tableContainer);
+                }
+            });
+        }
+
+        function createStockTable(stockReports) {
+            if (stockReports.length === 0) {
+                console.error('Stock reports list is empty.');
+                return null; // Return early if given an empty list of stock reports
+            }
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            table.appendChild(thead);
+            table.appendChild(tbody);
+
+            // Assuming all reports have the same keys, we get keys from the first one
+            const keys = Object.keys(stockReports[0]);
+
+            // Header row creation
+            const headerRow = document.createElement('tr');
+            keys.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key; // Could map to readable names if necessary
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // Constructing table body
+            stockReports.forEach(report => {
+                const row = document.createElement('tr');
+                keys.forEach(key => {
+                    const cell = document.createElement('td');
+                    cell.textContent = report[key];
+                    row.appendChild(cell);
+                });
+                tbody.appendChild(row);
+            });
+
+            return table;
+        }
+
+        // Listen to changes in the stocks array
+        Object.defineProperty(window, 'stocks', {
+            set: function (value) {
+                stocks = value;
+                console.log('Stocks array updated:', stocks);
+                redrawTables(stocks);
+            },
+            get: function () {
+                return stocks;
+            }
+        });
+
+
+
+        
     </script>
 
     <style>
@@ -412,6 +532,26 @@
 
         .fetch-btn:hover {
             background-color: #3488e1;
+        }
+
+        .stock-table-container {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        thead {
+            background-color: #f2f2f2;
         }
     </style>
 </body>
