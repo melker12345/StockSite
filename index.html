@@ -206,7 +206,6 @@
             "workingCapital": "Rörelsekapital"
         };
 
-
         // THEME TOGGLE
         function checkTheme() {
             const currentTheme = localStorage.getItem('theme') || 'light';
@@ -344,7 +343,6 @@
         }
 
 
-        // Modify the `redrawTables` to utilize isMinimized flag
         function redrawTables() {
             const stocksContainer = document.getElementById('stocksContainer');
             stocksContainer.innerHTML = ''; // Clear existing content
@@ -444,7 +442,6 @@
         }
 
 
-
         // Listen to changes in the stocks array
         Object.defineProperty(window, 'stocks', {
             set: function (value) {
@@ -458,7 +455,7 @@
         });
 
 
-
+        const excludeRangeForMetrics = ["Symbol", "CIK", "Datum", "RapporteradValuta", "Period", "Inlämningsdatum", "Kalenderår"];
 
         // LOCAL STORAGE
         function addToLocalStorage(stocks) {
@@ -505,9 +502,32 @@
             };
         });
 
+
+        // Utility to parse numeric values from formatted strings
+        function parseMetricValue(value) {
+            // Implement parsing logic
+            const parsedValue = parseFloat(value.replace(/[^\d.-]/g, ''));
+            return isNaN(parsedValue) ? null : parsedValue;
+        }
+
+        // Utility to get Metric Ranges
+        function getMetricRanges() {
+            const ranges = {};
+            document.querySelectorAll('.minRangeInput').forEach(input => {
+                const metric = input.dataset.metric;
+                const minValue = parseFloat(input.value) || null;
+                const maxValue = parseFloat(document.querySelector(`.maxRangeInput[data-metric="${metric}"]`).value) || null;
+                ranges[metric] = { min: minValue, max: maxValue };
+            });
+            return ranges;
+        }
+
         function populateMetricsCheckboxes() {
             const metricsContainer = document.getElementById('metricsCheckboxes');
             Object.keys(keyMapping).forEach(metric => {
+                const div = document.createElement('div'); // Create a container for each metric
+
+                // Checkbox for metric
                 const label = document.createElement('label');
                 label.textContent = keyMapping[metric];
                 const checkbox = document.createElement('input');
@@ -515,17 +535,38 @@
                 checkbox.checked = true;
                 checkbox.value = metric;
                 label.prepend(checkbox);
-                metricsContainer.appendChild(label);
-                metricsContainer.appendChild(document.createElement('br'));
+
+                div.appendChild(label);
+
+                // Exclude range inputs for specific metrics
+                if (!excludeRangeForMetrics.includes(metric)) {
+                    // Min input
+                    const minInput = document.createElement('input');
+                    minInput.type = 'number';
+                    minInput.placeholder = 'Min';
+                    minInput.className = 'minRangeInput';
+                    minInput.dataset.metric = metric;
+
+                    // Max input
+                    const maxInput = document.createElement('input');
+                    maxInput.type = 'number';
+                    maxInput.placeholder = 'Max';
+                    maxInput.className = 'maxRangeInput';
+                    maxInput.dataset.metric = metric;
+
+                    div.appendChild(minInput);
+                    div.appendChild(maxInput);
+                }
+
+                metricsContainer.appendChild(div);
             });
         }
 
         function applyFilters() {
             activeMetrics = Array.from(document.querySelectorAll('#metricsCheckboxes input:checked')).map(input => keyMapping[input.value]);
             modal.style.display = "none"; // Close the modal after applying filters
+            redrawTables();// Redraw tables with the newly selected metrics.
 
-            // Redraw tables with the newly selected metrics.
-            redrawTables();
         }
 
 
